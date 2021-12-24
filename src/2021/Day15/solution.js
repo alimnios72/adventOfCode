@@ -18,28 +18,36 @@ function part1(err, data) {
 }
 
 function part2(err, data) {
-   
+    let grid = data.split('\n')
+        .map(line => line.split('').map(Number));
+    
+    grid = expandGrid(grid, 5);
+    let start = { x: 0, y: 0, f: 0 };
+    let end = { x: grid.length - 1, y: grid[0].length - 1, f: 0 };
+
+    let res = findPathAstar(grid, start, end);
+    console.log(res.f);
 }
 
 function findPathAstar(grid, start, end) {
-    let openList = [];
-    let closedList = [];
+    let toVisit = [];
+    let visited = [];
 
-    openList.push(start);
+    toVisit.push(start);
 
-    while (openList.length > 0) {
-        let currentNode = openList[0];
+    while (toVisit.length > 0) {
+        let currentNode = toVisit[0];
         let currentIndex = 0;
 
-        for (let i = 0; i < openList.length; i++) {
-            if (openList[i].f < currentNode.f) {
-                currentNode = openList[i];
+        for (let i = 0; i < toVisit.length; i++) {
+            if (toVisit[i].f < currentNode.f) {
+                currentNode = toVisit[i];
                 currentIndex = i;
             }
         }
 
-        openList.splice(currentIndex, 1);
-        closedList.push(currentNode);
+        toVisit.splice(currentIndex, 1);
+        visited.push(currentNode);
 
         if (currentNode.x === end.x && currentNode.y === end.y) {
             return currentNode;
@@ -50,7 +58,7 @@ function findPathAstar(grid, start, end) {
         for (let neighbor of neighbors) {
 
             let inClosedList = false;
-            for (let item of closedList) {
+            for (let item of visited) {
                 if (neighbor.x === item.x && neighbor.y === item.y) {
                     inClosedList = true;
                     break;
@@ -64,7 +72,7 @@ function findPathAstar(grid, start, end) {
             neighbor.f += currentNode.f;
 
             let inOpenList = false;
-            for (let item of openList) {
+            for (let item of toVisit) {
                 if (neighbor.x === item.x && neighbor.y === item.y) {
                     inOpenList = true;
                     break;
@@ -72,7 +80,7 @@ function findPathAstar(grid, start, end) {
             }
 
             if (!inOpenList) {
-                openList.push(neighbor);
+                toVisit.push(neighbor);
             }
         }
     }
@@ -98,32 +106,31 @@ function isValid(grid, x, y) {
     return false;
 }
 
-function findPathRecursive(grid, start, end, curPath, paths) {
-    curPath['totalRisk'] += grid[start.x][start.y];
+function expandGrid(grid, times) {
+    let newGrid = Array.from(Array(grid.length * times), () => new Array(grid[0].length * times).fill(0));
 
-    if (start.x === end.x && start.y === end.y) {
-        paths.push(curPath);
-        return;
-    }
+    for (let i = 0; i < newGrid.length; i++) {
+        let len = newGrid[i].length / times;
 
-    let neighbors = getNeighbors(grid, start.x, start.y);
-
-    for (let neighbor of neighbors) {
-        let [x, y] = neighbor.split('-');
-        x = parseInt(x, 10);
-        y = parseInt(y, 10);
-
-        if ((start.x < x && start.y < y) || (start.x == x && start.y < y) || (start.x < x && start.y == y)) {
-            findPath(grid, {x, y}, end, Object.assign({}, curPath), paths)
+        for (let j = 0; j < newGrid[i].length; j++) {
+            if (grid[i] != null && grid[i][j] != null) {
+                newGrid[i][j] = grid[i][j];
+            } else {
+                if (i < len) {
+                    newGrid[i][j] = newGrid[i][j - len] !== 9 ? newGrid[i][j - len] + 1 : 1;
+                } else {
+                    newGrid[i][j] = newGrid[i - len][j] !== 9 ? newGrid[i - len][j] + 1 : 1;
+                }
+            }
         }
     }
 
-    return paths;
+    return newGrid;
 }
 
 function main() {
-    fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
-    // fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
+    // fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
+    fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
 }
 
 main();
