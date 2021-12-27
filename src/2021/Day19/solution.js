@@ -7,58 +7,115 @@ function part1(err, data) {
             .filter(line => line.indexOf('scanner') === -1)
             .map(line => line.split(',').map(Number)));
 
-    let scanner0 = allScanners[0];
-    let beaconsCount = 0;
+    let scanner0 = allScanners.shift();
+    let ocean = [ ...scanner0 ];
+    let oceanSet = new Set(ocean.map(coord => coord.join(',')));
 
-    // // Compare all scanners to scanner0
-    // for (let s = 2; s < 3; s++) {
-    //     // Rotate all projections in scanner
-    //     for (let i = 0; i < 24; i++) {
-    //         beaconsCount += compareScanners(scanner0, allScanners[s], i);
-    //     }
-    // }
+    while (allScanners.length > 0) {
+        let currentScanner = allScanners.shift();
+        let match = false;
 
-    // console.log(beaconsCount);
-    compareScanners(scanner0, allScanners[2], 7)
+        for (let i = 0; i < 24; i++) {
+            let count = {};
+
+            for (let point0 of ocean) {
+                for (let point1 of currentScanner) {
+                    let rotated = rotatePoint(point1, i);
+                    let distance = substractPoint(point0, rotated);
+                    count[distance] != null ? count[distance]++ : count[distance] = 1;
+                }
+            }
+
+            let matches = Object.keys(count).filter(num => count[num] >= MATCHING_BEACONS);
+
+            if (matches.length > 0) {
+                match = true;
+                let [x, y, z] = matches[0].split(',').map(Number);
+                for (let point1 of currentScanner) {
+                    let rotated = rotatePoint(point1, i);
+                    let addition = addPoint(rotated, [-x, -y, -z]);
+                    if (!oceanSet.has(addition.join(','))) {
+                        ocean.push(addition);
+                        oceanSet.add(addition.join(','));
+                    }
+                }
+            }
+        }
+
+        if (!match) {
+            allScanners.push(currentScanner);
+        } 
+    }
+    console.log(ocean.length);
 }
 
-function compareScanners(scanner0, scannerN, rotation) {
-    let count = {};
+function part2(err, data) {
+    let allScanners = data.split('\n\n')
+    .map(block => block.split('\n')
+        .filter(line => line.indexOf('scanner') === -1)
+        .map(line => line.split(',').map(Number)));
 
-    // Compare current scanner to scanner0
-    // for (let s0 of scanner0) {
-    //     for (let s1 of scannerN) {
-    //         let rotated = rotatePoint(s1, rotation);
-    //         // let distance = manhattanDistance(s0, rotated);
-    //         let distance = substraction(s0, rotated);
-    //         count[distance] != null ? count[distance]++ : count[distance] = 1;
-    //     }
-    // }
-    for (let s1 of scannerN) {
-        for (let s0 of scanner0) {
-            let rotated = rotatePoint(s0, rotation);
-            // let distance = manhattanDistance(s0, rotated);
-            let distance = substraction(rotated, s1);
-            count[distance] != null ? count[distance]++ : count[distance] = 1;
+    let scanner0 = allScanners.shift();
+    let ocean = [ ...scanner0 ];
+    let oceanSet = new Set(ocean.map(coord => coord.join(',')));
+    let scannerCoords = [];
+
+    while (allScanners.length > 0) {
+        let currentScanner = allScanners.shift();
+        let match = false;
+
+        for (let i = 0; i < 24; i++) {
+            let count = {};
+
+            for (let point0 of ocean) {
+                for (let point1 of currentScanner) {
+                    let rotated = rotatePoint(point1, i);
+                    let distance = substractPoint(point0, rotated);
+                    count[distance] != null ? count[distance]++ : count[distance] = 1;
+                }
+            }
+
+            let matches = Object.keys(count).filter(num => count[num] >= MATCHING_BEACONS);
+
+            if (matches.length > 0) {
+                match = true;
+                let [x, y, z] = matches[0].split(',').map(Number);
+                scannerCoords.push([-x, -y, -z]);
+                for (let point1 of currentScanner) {
+                    let rotated = rotatePoint(point1, i);
+                    let addition = addPoint(rotated, [-x, -y, -z]);
+                    if (!oceanSet.has(addition.join(','))) {
+                        ocean.push(addition);
+                        oceanSet.add(addition.join(','));
+                    }
+                }
+            }
+        }
+
+        if (!match) {
+            allScanners.push(currentScanner);
+        } 
+    }
+    
+    let maxDistance = -1;
+    for (let s1 of scannerCoords) {
+        for (let s2 of scannerCoords) {
+            maxDistance = Math.max(maxDistance, manhattanDistance(s1, s2));
         }
     }
 
-    console.log(count)
-    let res = Object.keys(count).filter(num => count[num] >= 3).map(k => count[k]);
-    console.log(res);
-    // if (res.length > 0) {
-    //     return count[res[0]];
-    // }
-
-    return 0;
+    console.log(maxDistance);
 }
 
 function manhattanDistance(p, q) {
     return Math.abs(q[0] - p[0]) + Math.abs(q[1] - p[1]) + Math.abs(q[2] - p[2]);
 }
 
-function substraction(p, q) {
-    return `${p[0]-q[0]},${p[1]-q[1]},${p[2]-q[2]}`;
+function addPoint(p, q) {
+    return [ p[0] + q[0], p[1] + q[1], p[2] + q[2]]
+}
+function substractPoint(p, q) {
+    return `${q[0]-p[0]},${q[1]-p[1]},${q[2]-p[2]}`;
 }
 
 function rotatePoint(p, rotation){
@@ -114,14 +171,9 @@ function rotatePoint(p, rotation){
         return [-z, -y, -x];
 }
 
-function part2(err, data) {
-}
-
-
-
 function main() {
-    fs.readFile(`${__dirname}/input1.txt`, 'utf8', part1);
-    // fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
+    fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
+    fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
 }
 
 main();
