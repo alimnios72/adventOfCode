@@ -7,45 +7,7 @@ function part1(err, data) {
             .filter(line => line.indexOf('scanner') === -1)
             .map(line => line.split(',').map(Number)));
 
-    let scanner0 = allScanners.shift();
-    let ocean = [ ...scanner0 ];
-    let oceanSet = new Set(ocean.map(coord => coord.join(',')));
-
-    while (allScanners.length > 0) {
-        let currentScanner = allScanners.shift();
-        let match = false;
-
-        for (let i = 0; i < 24; i++) {
-            let count = {};
-
-            for (let point0 of ocean) {
-                for (let point1 of currentScanner) {
-                    let rotated = rotatePoint(point1, i);
-                    let distance = substractPoint(point0, rotated);
-                    count[distance] != null ? count[distance]++ : count[distance] = 1;
-                }
-            }
-
-            let matches = Object.keys(count).filter(num => count[num] >= MATCHING_BEACONS);
-
-            if (matches.length > 0) {
-                match = true;
-                let [x, y, z] = matches[0].split(',').map(Number);
-                for (let point1 of currentScanner) {
-                    let rotated = rotatePoint(point1, i);
-                    let addition = addPoint(rotated, [-x, -y, -z]);
-                    if (!oceanSet.has(addition.join(','))) {
-                        ocean.push(addition);
-                        oceanSet.add(addition.join(','));
-                    }
-                }
-            }
-        }
-
-        if (!match) {
-            allScanners.push(currentScanner);
-        } 
-    }
+    let [ ocean ] = beaconMatching(allScanners);
     console.log(ocean.length);
 }
 
@@ -55,6 +17,19 @@ function part2(err, data) {
         .filter(line => line.indexOf('scanner') === -1)
         .map(line => line.split(',').map(Number)));
 
+    let maxDistance = -1;
+    let [ , scannerCoords] = beaconMatching(allScanners);
+
+    for (let s1 of scannerCoords) {
+        for (let s2 of scannerCoords) {
+            maxDistance = Math.max(maxDistance, manhattanDistance(s1, s2));
+        }
+    }
+
+    console.log(maxDistance);
+}
+
+function beaconMatching(allScanners) {
     let scanner0 = allScanners.shift();
     let ocean = [ ...scanner0 ];
     let oceanSet = new Set(ocean.map(coord => coord.join(',')));
@@ -96,15 +71,8 @@ function part2(err, data) {
             allScanners.push(currentScanner);
         } 
     }
-    
-    let maxDistance = -1;
-    for (let s1 of scannerCoords) {
-        for (let s2 of scannerCoords) {
-            maxDistance = Math.max(maxDistance, manhattanDistance(s1, s2));
-        }
-    }
 
-    console.log(maxDistance);
+    return [ ocean, scannerCoords];
 }
 
 function manhattanDistance(p, q) {
