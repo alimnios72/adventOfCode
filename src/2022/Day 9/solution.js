@@ -12,21 +12,10 @@ function moveKnot(move, headPosition, tailPosition) {
         if (headPosition.x !== tailPosition.x && headPosition.y !== tailPosition.y) {
             tailPosition.x += headPosition.x > tailPosition.x ? 1 : -1;
             tailPosition.y += headPosition.y> tailPosition.y ? 1 : -1;
+        } else if (headPosition.x !== tailPosition.x) {
+            tailPosition.x += headPosition.x > tailPosition.x ? 1 : -1;
         } else {
-            switch(move.direction) {
-                case 'U':
-                    tailPosition.y++;
-                    break;
-                case 'R':
-                    tailPosition.x++;
-                    break;
-                case 'D':
-                    tailPosition.y--;
-                    break;
-                case 'L':
-                    tailPosition.x--;
-                    break;
-            }
+            tailPosition.y += headPosition.y> tailPosition.y ? 1 : -1;
         }
     }
 
@@ -110,17 +99,15 @@ function part2(err, data) {
             tailPosition = knots[knots.length - 1];
             positionsVisited.push(`${tailPosition.x}-${tailPosition.y}`);
         }
-        console.log(knots)
     });
 
-    //Verificar == D 3 ==
     const uniquePositions = new Set(positionsVisited);
     console.log(uniquePositions.size);
 }
 
 function main() {
     // fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
-    fs.readFile(`${__dirname}/input1.txt`, 'utf8', part2);
+    fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
 }
 
 main();
