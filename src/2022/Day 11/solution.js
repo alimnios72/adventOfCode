@@ -4,7 +4,7 @@ function parseMonkeys(data) {
     return data.split('\n\n')
         .map(line => {
             let [name, start, operation, test, ifTrue, ifFalse] = line.split("\n");
-            let items = start.substring(18).split(',').map(Number)
+            let items = start.substring(18).split(',').map(Number);
 
             return {
                 name,
@@ -18,13 +18,14 @@ function parseMonkeys(data) {
         });
 }
 
-function monkeyThrowing(monkeys, rounds, div) {
+function monkeyThrowing(monkeys, rounds, div, modulo) {
     for (let i = 0; i < rounds; i++) {
         monkeys.forEach((monkey) => {
             while (monkey.items.length !== 0) {
                 let item = monkey.items.shift();
                 let op = monkey.operation.replace(/old/g, item);
                 let worryLevel = parseInt(eval(op) / div, 10);
+                if (modulo) worryLevel = worryLevel % modulo;
                 let throwTo = worryLevel % monkey.divisible === 0 ? monkey.ifTrue : monkey.ifFalse;
                 monkeys[throwTo].items.push(worryLevel);
                 monkey.inspections++;
@@ -43,14 +44,15 @@ function part1(err, data) {
 
 function part2(err, data) {
     const monkeys = parseMonkeys(data);
-    monkeyThrowing(monkeys, 10000, 1);
-    // console.log(monkeys);
+    const modulo = monkeys.reduce((a, b) => a * b.divisible, 1);
+    monkeyThrowing(monkeys, 10000, 1, modulo);
+
     console.log(monkeys[0].inspections * monkeys[1].inspections);
 }
 
 function main() {
-    fs.readFile(`${__dirname}/input1.txt`, 'utf8', part1);
-    // fs.readFile(`${__dirname}/input1.txt`, 'utf8', part2);
+    // fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
+    fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
 }
 
 main();
