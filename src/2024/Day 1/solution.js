@@ -29,7 +29,7 @@ function part2(error, data) {
 }
 
 function main(){
-    // fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
+    fs.readFile(`${__dirname}/input.txt`, 'utf8', part1);
     fs.readFile(`${__dirname}/input.txt`, 'utf8', part2);
 }
 
